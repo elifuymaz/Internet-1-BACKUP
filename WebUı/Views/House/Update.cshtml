@@ -1,0 +1,150 @@
+@{
+    ViewData["Title"] = "Update";
+    Layout = "~/Views/Shared/_adminLayout.cshtml";
+}
+@model House
+  <style>
+        .required:after {
+            content: " *";
+            color: red;
+        }
+        
+        select.form-select:required:invalid {
+            color: #6c757d;
+        }
+    </style>
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h2>Ev Düzenle</h2>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form asp-action="Update" method="post" enctype="multipart/form-data">
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="ImagePath" />
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label">Başlık</label>
+                            <input asp-for="Title" class="form-control" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Açıklama</label>
+                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Price" class="form-label">Fiyat</label>
+                            <input asp-for="Price" class="form-control" />
+                            <span asp-validation-for="Price" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="CityId" class="form-label required">Şehir</label>
+                            <select asp-for="CityId" asp-items="@ViewBag.Cities" class="form-select" required>
+                                <option value="">Seçiniz</option>
+                            </select>
+                            <span asp-validation-for="CityId" class="text-danger"></span>
+                            <div class="invalid-feedback">
+                                Lütfen bir şehir seçiniz
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="DistrictId" class="form-label required">İlçe</label>
+                            <select asp-for="DistrictId" asp-items="@ViewBag.Districts" class="form-select" required>
+                                <option value="">İlçe seçiniz</option>
+                            </select>
+                            <span asp-validation-for="DistrictId" class="text-danger"></span>
+                            <div class="invalid-feedback">
+                                Lütfen bir ilçe seçiniz
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="RoomCount" class="form-label">Oda Sayısı</label>
+                            <input asp-for="RoomCount" class="form-control" />
+                            <span asp-validation-for="RoomCount" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="SquareMeters" class="form-label">Metrekare</label>
+                            <input asp-for="SquareMeters" class="form-control" />
+                            <span asp-validation-for="SquareMeters" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Address" class="form-label">Adres</label>
+                            <textarea asp-for="Address" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Address" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="IsQuickSale" class="form-check-input" />
+                                <label asp-for="IsQuickSale" class="form-check-label">Hızlı Satış</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="IsActive" class="form-check-input" />
+                                <label asp-for="IsActive" class="form-check-label">Aktif</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Resim</label>
+                            <input type="file" name="image" class="form-control" accept="image/*" />
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.ImagePath))
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">Mevcut Resim</label>
+                                <img src="@Model.ImagePath" class="img-thumbnail d-block" style="max-width: 200px" />
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <button type="submit" class="btn btn-primary">Güncelle</button>
+                        <a asp-action="Index" class="btn btn-secondary">İptal</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $("#CityId").change(function () {
+                var cityId = $(this).val();
+                $("#DistrictId").empty();
+                $("#DistrictId").append('<option value="">İlçe seçiniz</option>');
+
+                if (cityId) {
+                    $.get("/House/GetDistrictsByCity", { cityId: cityId }, function (data) {
+                        $.each(data, function (index, item) {
+                            $("#DistrictId").append('<option value="' + item.id + '">' + item.name + '</option>');
+                        });
+                    });
+                }
+            });
+        });
+    </script>
+}
+

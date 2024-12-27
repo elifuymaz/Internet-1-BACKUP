@@ -1,0 +1,243 @@
+
+@{
+    ViewData["Title"] = "İlçeler";
+    Layout = "~/Views/Shared/_adminLayout.cshtml";
+}
+
+<div class="container-fluid mt-4">
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="card-title">İlçeler</h3>
+                <button type="button" class="btn btn-primary" onclick="showAddModal()">
+                    <i class="fas fa-plus"></i> Yeni İlçe Ekle
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <table id="districtsTable" class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>İlçe Adı</th>
+                        <th>Bağlı Olduğu İl</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Ekleme Modal -->
+<div class="modal fade" id="addModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Yeni İlçe Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addForm">
+                    <div class="mb-3">
+                        <label for="cityId" class="form-label">İl</label>
+                        <select class="form-select" id="cityId" required>
+                            <option value="">İl Seçiniz</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="districtName" class="form-label">İlçe Adı</label>
+                        <input type="text" class="form-control" id="districtName" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="createDistrict()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Güncelleme Modal -->
+<div class="modal fade" id="updateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">İlçe Güncelle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="updateForm">
+                    <input type="hidden" id="updateDistrictId">
+                    <div class="mb-3">
+                        <label for="updateCityId" class="form-label">İl</label>
+                        <select class="form-select" id="updateCityId" required>
+                            <option value="">İl Seçiniz</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="updateDistrictName" class="form-label">İlçe Adı</label>
+                        <input type="text" class="form-control" id="updateDistrictName" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="updateDistrict()">Güncelle</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let dataTable;
+        
+        $(document).ready(function () {
+            loadCities();
+            initializeDataTable();
+        });
+
+        function initializeDataTable() {
+            dataTable = $('#districtsTable').DataTable({
+                ajax: {
+                    url: '@Url.Action("GetDistrictList")',
+                    type: 'GET',
+                    datatype: 'json'
+                },
+                columns: [
+                    { data: 'name' },
+                    { data: 'cityName' },
+                    {
+                        data: 'id',
+                        render: function (data) {
+                            return `<button class="btn btn-info btn-sm" onclick="showUpdateModal(${data})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteDistrict(${data})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>`;
+                        }
+                    }
+                ],
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json'
+                }
+            });
+        }
+
+        function loadCities() {
+            $.ajax({
+                url: '@Url.Action("GetCitiesForDropdown")',
+                type: 'GET',
+                success: function (cities) {
+                    let options = '<option value="">İl Seçiniz</option>';
+                    cities.forEach(function (city) {
+                        options += `<option value="${city.id}">${city.name}</option>`;
+                    });
+                    $('#cityId, #updateCityId').html(options);
+                }
+            });
+        }
+
+        function showAddModal() {
+            $('#addForm')[0].reset();
+            $('#addModal').modal('show');
+        }
+
+        function createDistrict() {
+            const cityId = $('#cityId').val();
+            const districtName = $('#districtName').val();
+
+            if (!cityId || !districtName) {
+                toastr.error('Tüm alanları doldurunuz!');
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("CreateDistrict")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    name: districtName,
+                    cityId: parseInt(cityId)
+                }),
+                success: function (result) {
+                    if (result.success) {
+                        $('#addModal').modal('hide');
+                        dataTable.ajax.reload();
+                        toastr.success(result.message);
+                    } else {
+                        toastr.error(result.message);
+                    }
+                }
+            });
+        }
+
+        function showUpdateModal(id) {
+            $.ajax({
+                url: '@Url.Action("GetDistrict")/' + id,
+                type: 'GET',
+                success: function (result) {
+                    if (result.success) {
+                        $('#updateDistrictId').val(result.data.id);
+                        $('#updateCityId').val(result.data.cityId);
+                        $('#updateDistrictName').val(result.data.name);
+                        $('#updateModal').modal('show');
+                    } else {
+                        toastr.error(result.message);
+                    }
+                }
+            });
+        }
+
+        function updateDistrict() {
+            const id = $('#updateDistrictId').val();
+            const cityId = $('#updateCityId').val();
+            const name = $('#updateDistrictName').val();
+
+            if (!cityId || !name) {
+                toastr.error('Tüm alanları doldurunuz!');
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("UpdateDistrict")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    id: parseInt(id),
+                    name: name,
+                    cityId: parseInt(cityId)
+                }),
+                success: function (result) {
+                    if (result.success) {
+                        $('#updateModal').modal('hide');
+                        dataTable.ajax.reload();
+                        toastr.success(result.message);
+                    } else {
+                        toastr.error(result.message);
+                    }
+                }
+            });
+        }
+
+        function deleteDistrict(id) {
+            if (confirm('Bu ilçeyi silmek istediğinize emin misiniz?')) {
+                $.ajax({
+                    url: '@Url.Action("DeleteDistrict")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (result) {
+                        if (result.success) {
+                            dataTable.ajax.reload();
+                            toastr.success(result.message);
+                        } else {
+                            toastr.error(result.message);
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+} 

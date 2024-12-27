@@ -1,0 +1,54 @@
+@model IEnumerable<WebUı.Models.House>
+
+@{
+    ViewData["Title"] = "Onay Bekleyen İlanlar";
+    Layout = "~/Views/Shared/_adminLayout.cshtml";
+}
+
+<div class="container mt-4">
+    <h2>Onay Bekleyen İlanlar</h2>
+    
+    <div class="row">
+        @foreach (var house in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    @if (!string.IsNullOrEmpty(house.ImagePath))
+                    {
+                        <img src="@house.ImagePath" class="card-img-top" alt="Ev Görseli">
+                    }
+                    <div class="card-body">
+                        <h5 class="card-title">@house.Title</h5>
+                        <p class="card-text">
+                            <strong>Şehir:</strong> @house.City.Name<br />
+                            <strong>İlçe:</strong> @house.District.Name<br />
+                            <strong>Fiyat:</strong> @house.Price.ToString("C")<br />
+                            <strong>Ekleyen:</strong> @house.CreatedBy.UserName
+                        </p>
+                        <div class="d-flex justify-content-between">
+                            <a href="@Url.Action("GetHouseDetails", "Admin", new { id = house.Id })" 
+                               class="btn btn-info">Detaylar</a>
+                            <button onclick="approveHouse(@house.Id)" 
+                                    class="btn btn-success">Onayla</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function approveHouse(id) {
+            if (confirm('Bu ilanı onaylamak istediğinizden emin misiniz?')) {
+                $.post('@Url.Action("ApproveHouse", "Admin")', { id: id }, function(response) {
+                    if (response.success) {
+                        // İlan onaylandıktan sonra kartı kaldır
+                        location.reload();
+                    }
+                });
+            }
+        }
+    </script>
+} 

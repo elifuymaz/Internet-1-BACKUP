@@ -1,0 +1,50 @@
+@model House
+
+<div class="modal fade" id="houseDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">İlan Detayı</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        @if (!string.IsNullOrEmpty(Model.ImagePath))
+                        {
+                            <img src="@Model.ImagePath" class="img-fluid" alt="@Model.Title">
+                        }
+                    </div>
+                    <div class="col-md-6">
+                        <h4>@Model.Title</h4>
+                        <p>@Model.Description</p>
+                        <p><strong>Fiyat:</strong> @Model.Price.ToString("C")</p>
+                        <p><strong>Konum:</strong> @Model.City.Name, @Model.District.Name</p>
+                        <p><strong>Oda Sayısı:</strong> @Model.RoomCount</p>
+                        <p><strong>Alan:</strong> @Model.SquareMeters m²</p>
+                        <p><strong>Ekleyen:</strong> @Model.CreatedBy.UserName</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" onclick="approveHouse(@Model.Id)">
+                    İlanı Onayla
+                </button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function approveHouse(id) {
+    $.post('/Admin/ApproveHouse/' + id, function(response) {
+        if (response.success) {
+            $('#houseDetailModal').modal('hide');
+            toastr.success('İlan başarıyla onaylandı!');
+        }
+    });
+}
+</script> 

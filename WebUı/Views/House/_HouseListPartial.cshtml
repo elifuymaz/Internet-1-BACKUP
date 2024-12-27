@@ -1,0 +1,25 @@
+@model IEnumerable<House>
+
+@foreach (var house in Model)
+{
+    <tr>
+        <td>
+            <img src="@(string.IsNullOrEmpty(house.ImagePath) ? "/images/no-image.jpg" : house.ImagePath)" 
+                 class="img-thumbnail" style="max-width: 100px" alt="@house.Title" />
+        </td>
+        <td>@house.Title</td>
+        <td>@house.Price.ToString("C")</td>
+        <td>@house.City.Name</td>
+        <td>@house.District.Name</td>
+        <td>@(house.IsQuickSale ? "Evet" : "Hayır")</td>
+        <td>@(house.IsActive ? "Aktif" : "Pasif")</td>
+        <td>
+            <a asp-action="Update" asp-route-id="@house.Id" class="btn btn-warning btn-sm">
+                <i class="fas fa-edit"></i>
+            </a>
+            <a asp-action="Delete" asp-controller="House" asp-route-id="@house.Id" class="btn btn-danger btn-sm delete-house">
+                <i class="fas fa-trash"></i>
+            </a>
+        </td>
+    </tr>
+} 

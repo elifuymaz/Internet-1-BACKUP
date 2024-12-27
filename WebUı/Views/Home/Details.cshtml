@@ -1,0 +1,51 @@
+@model House
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            @if (!string.IsNullOrEmpty(Model.ImagePath))
+            {
+                <img src="@Model.ImagePath" class="img-fluid rounded" alt="@Model.Title">
+            }
+        </div>
+        <div class="col-md-4">
+            <h2>@Model.Title</h2>
+            <hr />
+            <div class="mb-3">
+                <h4 class="text-primary">@Model.Price.ToString("C")</h4>
+            </div>
+            <div class="mb-3">
+                <strong>Konum:</strong>
+                <p>@Model.City.Name, @Model.District.Name</p>
+            </div>
+            <div class="mb-3">
+                <strong>İlan Tarihi:</strong>
+                <p>@Model.CreatedAt.ToString("dd.MM.yyyy")</p>
+            </div>
+            <div class="mb-3">
+                <strong>İlan Sahibi:</strong>
+                <p>@Model.CreatedBy.UserName</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">İlan Detayları</h5>
+                    <p class="card-text">@Model.Description</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col">
+            <a asp-action="Index" class="btn btn-secondary">Geri Dön</a>
+        </div>
+    </div>
+</div> 

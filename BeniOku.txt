@@ -1,0 +1,34 @@
+Projeyi çalıştırmadan önce aşağıdaki adımları takip etmeniz gerekmektedir:
+
+appsettings.json Dosyasını Düzenleme
+Projenin appsettings.json dosyasına gidin ve ConnectionStrings bölümündeki DefaultConnection değerini kendi MSSQL bağlantı bilgilerinizle doldurun:
+
+"ConnectionStrings": {
+    "DefaultConnection": "Server=YOUR_SERVER;Database=YOUR_DATABASE;User Id=YOUR_USERNAME;Password=YOUR_PASSWORD;"
+}
+Migration Oluşturma ve Veritabanını Güncelleme
+
+Visual Studio’da üst menüden View (Görünüm) > Other Windows (Diğer Pencereler) > Package Manager Console (Paket Yöneticisi Konsolu) seçeneğini tıklayın.
+Açılan konsol ekranına aşağıdaki komutu yazın ve Enter tuşuna basın:
+add-migration mig1
+Bu işlem tamamlandığında bir migration dosyası oluşturulacaktır.
+Aynı konsol ekranına bu sefer aşağıdaki komutu yazın ve Enter tuşuna basın:
+
+update-database
+Bu işlem veritabanınızı güncelleyecek. İşlem biraz zaman alabilir, sabırlı olun.
+Projenin Çalıştırılması
+Projeyi çalıştırdığınızda, sizi doğrudan bir Login ekranı karşılayacaktır.
+
+Admin olarak giriş yapmak için aşağıdaki bilgileri kullanabilirsiniz:
+Kullanıcı Adı: admin@admin.com
+Şifre: Admin123!
+
+-Ajax İşlemleri
+-İl Ekleme
+-İlçe Ekleme
+-Ev Listeleme
+
+-SignalR
+-SignalR şu şekilde çalışıyor, birisi ilan oluşturudğunda , admin tarafında açık olduğu sürece ev ekleme onayı direk düşüyür tabi bunu daha sonradanda onaylanabiliyor denemsi şöyle yapabilirsin. Bir tane admin hesabını chormda(sana kalmıl) aç birde linki kopyala opera (sana kalmış) burada yapıştır ama burada normal kullanıcı olarak aç zaten sonra ikisini küçült direk göreceksin. admin panelinde birisi ilan ekleyince sağ üste bildirisi gelecek. 
+
+-İdentity İle işlemler yapıldı

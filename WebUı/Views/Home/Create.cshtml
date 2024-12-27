@@ -1,0 +1,127 @@
+@model House
+@{
+    ViewData["Title"] = "Ev İlanı Ver";
+}
+
+<div class="container">
+    <div class="row mb-3">
+        <div class="col">
+            <h2>Yeni İlan Ekle</h2>
+            <p class="text-muted">İlanınız yönetici onayından sonra yayınlanacaktır.</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label required">İlan Başlığı</label>
+                            <input asp-for="Title" class="form-control" required />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                            <div class="form-text">Örnek: 3+1 Satılık Daire, Merkezi Konumda 2+1 vb.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label required">Açıklama</label>
+                            <textarea asp-for="Description" class="form-control" rows="4" required></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                            <div class="form-text">Evinizin özelliklerini detaylı bir şekilde açıklayın.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Price" class="form-label required">Fiyat (TL)</label>
+                            <input asp-for="Price" class="form-control" type="number" required />
+                            <span asp-validation-for="Price" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="CityId" class="form-label required">Şehir</label>
+                            <select asp-for="CityId" asp-items="@ViewBag.Cities" class="form-select" required>
+                                <option value="">Şehir Seçiniz</option>
+                            </select>
+                            <span asp-validation-for="CityId" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="DistrictId" class="form-label required">İlçe</label>
+                            <select asp-for="DistrictId" class="form-select" required>
+                                <option value="">Önce Şehir Seçiniz</option>
+                            </select>
+                            <span asp-validation-for="DistrictId" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="RoomCount" class="form-label required">Oda Sayısı</label>
+                            <input asp-for="RoomCount" class="form-control" required />
+                            <span asp-validation-for="RoomCount" class="text-danger"></span>
+                            <div class="form-text">Örnek: 2+1 için 3, 3+1 için 4 yazınız.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="SquareMeters" class="form-label required">Metrekare</label>
+                            <input asp-for="SquareMeters" class="form-control" type="number" required />
+                            <span asp-validation-for="SquareMeters" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Address" class="form-label required">Açık Adres</label>
+                            <textarea asp-for="Address" class="form-control" rows="3" required></textarea>
+                            <span asp-validation-for="Address" class="text-danger"></span>
+                            <div class="form-text">Mahalle, sokak ve bina numarası gibi detaylı adres bilgisi giriniz.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label required">Ev Fotoğrafı</label>
+                            <input type="file" name="image" class="form-control" accept="image/*" required />
+                            <div class="form-text">En az 1 adet fotoğraf ekleyiniz. (Max: 5MB)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col">
+                        <button type="submit" class="btn btn-primary">İlanı Gönder</button>
+                        <a asp-action="Index" class="btn btn-secondary">İptal</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+    <style>
+        .required:after {
+            content: " *";
+            color: red;
+        }
+        
+        select.form-select:required:invalid {
+            color: #6c757d;
+        }
+    </style>
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $("#CityId").change(function () {
+                var cityId = $(this).val();
+                $("#DistrictId").empty();
+                $("#DistrictId").append('<option value="">İlçe Seçiniz</option>');
+
+                if (cityId) {
+                    $.get("/Home/GetDistrictsByCity", { cityId: cityId }, function (data) {
+                        $.each(data, function (index, item) {
+                            $("#DistrictId").append('<option value="' + item.id + '">' + item.name + '</option>');
+                        });
+                    });
+                }
+            });
+        });
+    </script>
+} 

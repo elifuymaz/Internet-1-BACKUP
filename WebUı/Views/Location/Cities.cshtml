@@ -1,0 +1,210 @@
+﻿@{
+    ViewData["Title"] = "İller";
+    Layout = "~/Views/Shared/_adminLayout.cshtml";
+}
+
+<div class="container-fluid mt-4">
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="card-title">İller</h3>
+                <button type="button" class="btn btn-primary" onclick="showAddModal()">
+                    <i class="fas fa-plus"></i> Yeni İl Ekle
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <table id="citiesTable" class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>İl Adı</th>
+                        <th>İlçe Sayısı</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Ekleme Modal -->
+<div class="modal fade" id="addModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Yeni İl Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addForm">
+                    <div class="mb-3">
+                        <label for="cityName" class="form-label">İl Adı</label>
+                        <input type="text" class="form-control" id="cityName" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="createCity()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Güncelleme Modal -->
+<div class="modal fade" id="updateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">İl Güncelle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="updateForm">
+                    <input type="hidden" id="updateCityId">
+                    <div class="mb-3">
+                        <label for="updateCityName" class="form-label">İl Adı</label>
+                        <input type="text" class="form-control" id="updateCityName" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="updateCity()">Güncelle</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="//cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css" />
+    <script>
+     
+
+        $(document).ready(function () {
+            dataTable = $('#citiesTable').DataTable({
+                ajax: {
+                    url: '@Url.Action("GetCityList")',
+                    type: 'GET',
+                    datatype: 'json'
+                },
+                columns: [
+                    { data: 'name' },
+                    { data: 'districtCount' },
+                    {
+                        data: 'id',
+                        render: function (data) {
+                            return `<button class="btn btn-info btn-sm" onclick="showUpdateModal(${data})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteCity(${data})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>`;
+                        }
+                    }
+                ],
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json'
+                }
+            });
+        });
+
+        function showAddModal() {
+            $('#addForm')[0].reset();
+            $('#addModal').modal('show');
+        }
+
+        function createCity() {
+            const cityName = $('#cityName').val();
+            if (!cityName) {
+                toastr.error('İl adı boş olamaz!');
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("CreateCity")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ name: cityName }),
+                success: function (result) {
+                    if (result.success) {
+                        $('#addModal').modal('hide');
+                        dataTable.ajax.reload();
+                        toastr.success(result.message);
+                    } else {
+                        toastr.error(result.message);
+                    }
+                },
+                error: function () {
+                    toastr.error('Bir hata oluştu!');
+                }
+            });
+        }
+
+        function showUpdateModal(id) {
+            $.ajax({
+                url: '@Url.Action("GetCity")/' + id,
+                type: 'GET',
+                success: function (result) {
+                    if (result.success) {
+                        $('#updateCityId').val(result.data.id);
+                        $('#updateCityName').val(result.data.name);
+                        $('#updateModal').modal('show');
+                    } else {
+                        toastr.error(result.message);
+                    }
+                }
+            });
+        }
+
+        function updateCity() {
+            const id = $('#updateCityId').val();
+            const name = $('#updateCityName').val();
+
+            if (!name) {
+                toastr.error('İl adı boş olamaz!');
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("UpdateCity")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ id: id, name: name }),
+                success: function (result) {
+                    if (result.success) {
+                        $('#updateModal').modal('hide');
+                        dataTable.ajax.reload();
+                        toastr.success(result.message);
+                    } else {
+                        toastr.error(result.message);
+                    }
+                },
+                error: function () {
+                    toastr.error('Bir hata oluştu!');
+                }
+            });
+        }
+
+        function deleteCity(id) {
+            if (confirm('Bu ili silmek istediğinize emin misiniz?')) {
+                $.ajax({
+                    url: '@Url.Action("DeleteCity")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (result) {
+                        if (result.success) {
+                            dataTable.ajax.reload();
+                            toastr.success(result.message);
+                        } else {
+                            toastr.error(result.message);
+                        }
+                    },
+                    error: function () {
+                        toastr.error('Bir hata oluştu!');
+                    }
+                });
+            }
+        }
+    </script>
+}

@@ -1,0 +1,119 @@
+@model IEnumerable<House>
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_adminLayout.cshtml";
+    var houses = Model.ToList(); // İlk 5 evi al
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sol taraf - Ev listesi (col-9) -->
+        <div class="col-md-9">
+            <div class="row mb-3">
+                <div class="col">
+                    <h2>Ev Listesi</h2>
+                </div>
+                <div class="col-auto">
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Yeni Ev Ekle
+                    </a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Resim</th>
+                                    <th>Başlık</th>
+                                    <th>Fiyat</th>
+                                    <th>Şehir</th>
+                                    <th>İlçe</th>
+                                    <th>Hızlı Satış</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var house in houses)
+                                {
+                                    <tr>
+                                        <td>
+                                            <img src="@(string.IsNullOrEmpty(house.ImagePath) ? "/images/no-image.jpg" : house.ImagePath)" 
+                                                 class="img-thumbnail" style="max-width: 100px" alt="@house.Title" />
+                                        </td>
+                                        <td>@house.Title</td>
+                                        <td>@house.Price.ToString("C")</td>
+                                        <td>@house.City.Name</td>
+                                        <td>@house.District.Name</td>
+                                        <td>@(house.IsQuickSale ? "Evet" : "Hayır")</td>
+                                        <td>@(house.IsActive ? "Aktif" : "Pasif")</td>
+                                        <td>
+                                            <a asp-action="Update" asp-route-id="@house.Id" class="btn btn-warning btn-sm">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a asp-action="Delete" asp-controller="House" asp-route-id="@house.Id" class="btn btn-danger btn-sm delete-house">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        
+                   
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sağ taraf - İl filtreleme (col-3) -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5>İllere Göre Filtrele</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        @foreach (var city in ViewBag.Cities)
+                        {
+                            <a href="#" class="list-group-item list-group-item-action city-filter" 
+                               data-city-id="@city.Id">
+                                @city.Name
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            let currentPage = 1;
+            
+            $("#loadMore").click(function() {
+                currentPage++;
+                $.get(`/House/LoadMore?page=${currentPage}`, function(data) {
+                    $("table tbody").append(data);
+                    if (data.trim() === "") {
+                        $("#loadMore").hide();
+                    }
+                });
+            });
+
+            $(".city-filter").click(function(e) {
+                e.preventDefault();
+                const cityId = $(this).data("city-id");
+                $.get(`/House/FilterByCity/${cityId}`, function(data) {
+                    $("table tbody").html(data);
+                    $("#loadMore").hide();
+                });
+            });
+        });
+    </script>
+} 

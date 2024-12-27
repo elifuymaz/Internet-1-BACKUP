@@ -1,0 +1,130 @@
+@model House
+@{
+    ViewData["Title"] = "İlan Detayı";
+    Layout = "~/Views/Shared/_adminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">İlan Detayı</h6>
+            <div>
+                @if (!Model.IsActive)
+                {
+                    <button class="btn btn-success" onclick="approveHouse(@Model.Id)">
+                        <i class="fas fa-check"></i> İlanı Onayla
+                    </button>
+                }
+                <a href="javascript:history.back()" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Geri Dön
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    @if (!string.IsNullOrEmpty(Model.ImagePath))
+                    {
+                        <img src="@Model.ImagePath" class="img-fluid rounded shadow" alt="@Model.Title">
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Bu ilan için resim bulunmamaktadır.
+                        </div>
+                    }
+                </div>
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h4 class="card-title text-primary">@Model.Title</h4>
+                            <hr>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <p><strong><i class="fas fa-lira-sign"></i> Fiyat:</strong></p>
+                                    <h5 class="text-success">@Model.Price.ToString("C")</h5>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong><i class="fas fa-map-marker-alt"></i> Konum:</strong></p>
+                                    <h5>@Model.City.Name, @Model.District.Name</h5>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <p><strong><i class="fas fa-door-open"></i> Oda Sayısı:</strong></p>
+                                    <h5>@Model.RoomCount</h5>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong><i class="fas fa-vector-square"></i> Alan:</strong></p>
+                                    <h5>@Model.SquareMeters m²</h5>
+                                </div>
+                            </div>
+                            <hr>
+                            <p><strong><i class="fas fa-align-left"></i> Açıklama:</strong></p>
+                            <p class="card-text">@Model.Description</p>
+                            <hr>
+                            <p><strong><i class="fas fa-map"></i> Adres:</strong></p>
+                            <p class="card-text">@Model.Address</p>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong><i class="fas fa-user"></i> Ekleyen:</strong></p>
+                                    <p>@Model.CreatedBy.UserName</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong><i class="fas fa-calendar"></i> Eklenme Tarihi:</strong></p>
+                                    <p>@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col">
+                                    <div class="badge @(Model.IsActive ? "badge-success" : "badge-warning") p-2">
+                                        <i class="fas @(Model.IsActive ? "fa-check-circle" : "fa-clock")"></i>
+                                        @(Model.IsActive ? "Aktif İlan" : "Onay Bekliyor")
+                                    </div>
+                                    @if (Model.IsQuickSale)
+                                    {
+                                        <div class="badge badge-danger p-2">
+                                            <i class="fas fa-bolt"></i> Acil Satılık
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function approveHouse(id) {
+            Swal.fire({
+                title: 'İlanı Onaylamak İstiyor musunuz?',
+                text: "Bu işlem ilanı aktif hale getirecektir.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Evet, Onayla',
+                cancelButtonText: 'İptal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Admin/ApproveHouse/' + id, function(response) {
+                        if (response.success) {
+                            Swal.fire(
+                                'Onaylandı!',
+                                'İlan başarıyla onaylandı.',
+                                'success'
+                            ).then(() => {
+                                window.location.reload();
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+} 
